@@ -1,0 +1,186 @@
+{
+  "name": "resume based  interview questions",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "resume",
+        "responseMode": "responseNode",
+        "options": {
+          "binaryPropertyName": "resume"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1184,
+        1056
+      ],
+      "id": "0f7e8a81-6788-4b78-83ca-0f45d4f634ab",
+      "name": "Webhook",
+      "webhookId": "e8b4bbcd-091b-4796-8b43-47d9248c18e0"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -960,
+        1056
+      ],
+      "id": "0deb698e-e2b3-450d-adda-049b221b1f2c",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Top 30 interview questions",
+        "options": {
+          "systemMessage": "=You are an intelligent AI agent responsible for generating 30 customized interview questions for a job candidate.\n\n## 🎯 Objective:\nGenerate 30 interview questions tailored to the candidate's:\n- Role:{{ $('Respond to Webhook').item.json.body.role }}\n- Company: {{ $('Respond to Webhook').item.json.body.company }}\n- Resume content: {{ $json.text }}\n## 🧩 Tools Available:\n- Gemini Tool: To analyze the resume and extract insights such as skills, experience, education, and projects.\n\n## 📝 Responsibilities:\n1. Use the Gemini Tool to:\n   - Analyze the resume content passed via {{ $json.text }}\n   - Extract key insights: skills, experience, technologies, education, and projects\n\n2. Combine extracted resume data with:\n   - The specified Role\n   - The specified Company\n\n3. Generate **30 point-wise interview questions** in plain text:\n   - 15 technical questions\n   - 10 behavioral questions\n   - 5 scenario-based or problem-solving questions\n\n4. Return the final result in this exact **text format**:\n",
+          "passthroughBinaryImages": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -512,
+        1056
+      ],
+      "id": "6a98eefb-d926-4e4b-8d8e-6c4fcdbf0cc8",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "fromEmail": "srihari9494435@gmail.com",
+        "toEmail": "={{ $('Respond to Webhook').item.json.body.email }}",
+        "subject": "Top 30 Interview questions",
+        "emailFormat": "text",
+        "text": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        1056
+      ],
+      "id": "be33e63b-8e17-4424-8eb1-f24194c4731f",
+      "name": "Send email1",
+      "webhookId": "47040eba-60bf-4a59-92c4-e708f7e8c925",
+      "credentials": {
+        "smtp": {
+          "id": "dBLxbhT8CvNJctYp",
+          "name": "SMTP account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        1280
+      ],
+      "id": "f251f4e1-64dc-4975-9012-2c0a07402c09",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "07sYXDkxmkTyoEwL",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "resume0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        1056
+      ],
+      "id": "fe8feb3a-4622-4813-a693-7e11f2a6a476",
+      "name": "Extract from File1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Send email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3052bd1d-1874-4868-ad18-8c46ec15c461",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9a650b406c5d0ddd2f7316a33fe489d6e4873fee5045bac720fe770655b8a613"
+  },
+  "id": "nGAlDXZyQV37ulZN",
+  "tags": []
+}
